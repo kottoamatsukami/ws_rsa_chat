@@ -1,4 +1,4 @@
-# WSRSA Char
+# WSRSA Chat
 This project is a simple WebSocket chat using RSA encryption for secure data transfer.
 
 ## Installing
