@@ -8,7 +8,7 @@ cd ws_rsa_chat
 ```
 Make sure you have Poetry installed (https://python-poetry.org). Then run the following commands:
 ```bash
-poetry install
+poetry update
 ```
 For deploy server use:
 ```bash
