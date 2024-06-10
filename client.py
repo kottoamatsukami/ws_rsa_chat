@@ -110,17 +110,24 @@ if __name__ == '__main__':
                     else:
                         status, msg = extract_bytes_from_str(package['message'])
                         if status:
-                            status, msg = decode_message(msg, private_key) if pkey is not None else False, msg
-                            if status:
+                            success, msg = decode_message(msg, private_key) if pkey is not None else (False, msg)
+                            if success:
                                 print(msg.decode('utf-8'))
 
+                # handle <disconnect> package
+                elif package['type'] == 'disconnect':
+                    print('[CLIENT] user disconnected')
+                    pkey = None
+
         thread.start_new_thread(msg_handle, (message, ))
+
+    def on_close(_: WebSocket, *args):
+        print('Connection closed')
     #
     # Initialize WebSocketApp
     #
-    wsc = WebSocketApp(SERVER_WS_ENDPOINT + '/' + room)
+    wsc = WebSocketApp(SERVER_WS_ENDPOINT + '/' + room, on_close=on_close)
     wsc.on_message = on_message
-    wsc.on_close   = lambda _: print('Connection closed')
     wsc.on_open    = on_open
 
     # Run client

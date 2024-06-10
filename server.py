@@ -12,18 +12,33 @@ pairs = {}
 server = FastAPI()
 
 
-async def disconnect(websocket, client_address, room):
+async def disconnect(room, client):
     """
     This function will disconnect the websocket from the client
-    :param websocket:
-    :param client_address:
     :param room:
+    :param client:
     :return: None
     """
-    del pairs[room][client_address]
-    await websocket.close()
-    if len(pairs[room]) == 0:
-        del pairs[room]
+    if client in pairs[room]:
+        try:
+            await pairs[room][client]['ws'].close()
+        except RuntimeError:
+            pass
+
+        del pairs[room][client]
+
+        if len(pairs[room]) == 0:
+            del pairs[room]
+
+        for address in pairs[room]:
+            await pairs[room][address]['ws'].send_bytes(
+                    json.dumps(
+                        {
+                            'type'   : 'disconnect',
+                            'who'    : client,
+                        }
+                    ).encode('utf-8')
+                )
 
 
 async def send_messages_to_subscribers(message: str, room: str, exclude: set[str], extra: str = ''):
@@ -35,17 +50,23 @@ async def send_messages_to_subscribers(message: str, room: str, exclude: set[str
     :param extra:
     :return:
     """
+    disconnected = []
     for sub_address in pairs[room]:
         if sub_address not in exclude:
-            await pairs[room][sub_address]['ws'].send_bytes(
-                json.dumps(
-                    {
-                        'type'   : 'message',
-                        'message': message,
-                        'extra'  : extra
-                    }
-                ).encode('utf-8')
-            )
+            try:
+                await pairs[room][sub_address]['ws'].send_bytes(
+                    json.dumps(
+                        {
+                            'type'   : 'message',
+                            'message': message,
+                            'extra'  : extra
+                        }
+                    ).encode('utf-8')
+                )
+            except RuntimeError:
+                disconnected.append(sub_address)
+    for dis in disconnected:
+        await disconnect(room, dis)
 
 
 @server.websocket("/ws/{room}")
@@ -122,6 +143,6 @@ async def websocket_endpoint(websocket: WebSocket, room: str):
             await asyncio.sleep(1)
 
     except websockets.exceptions.ConnectionClosedOK:
-        await disconnect(websocket, client_address, room)
+        pass
     except starlette.websockets.WebSocketDisconnect:
-        await disconnect(websocket, client_address, room)
+        pass
