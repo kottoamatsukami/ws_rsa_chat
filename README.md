@@ -18,3 +18,8 @@ To use client use:
 ```bash
 poetry run python client.py
 ```
+
+Also, you can run some tests with:
+```bash
+poetry run pytest
+```
