@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "chat"
+name = "ws_rsa_chat"
 version = "0.1.0"
 description = ""
 authors = ["Maksim Shushkevich <meshushkevich@edu.hse.ru>"]
