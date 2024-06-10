@@ -110,8 +110,9 @@ if __name__ == '__main__':
                     else:
                         status, msg = extract_bytes_from_str(package['message'])
                         if status:
-                            msg = decode_message(msg, private_key) if pkey is not None else msg
-                            print(msg.decode('utf-8'))
+                            status, msg = decode_message(msg, private_key) if pkey is not None else False, msg
+                            if status:
+                                print(msg.decode('utf-8'))
 
         thread.start_new_thread(msg_handle, (message, ))
     #

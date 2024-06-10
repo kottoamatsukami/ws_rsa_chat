@@ -1,6 +1,7 @@
 from rsa import PublicKey, PrivateKey, encrypt, decrypt
 from ast import literal_eval
 from datetime import datetime
+import rsa
 
 
 def encode_message(message_utf: bytes, pub_key: PublicKey) -> tuple[bool, bytes]:
@@ -27,7 +28,7 @@ def decode_message(encoded_message: bytes, priv_key: PrivateKey) -> tuple[bool, 
     try:
         decoded_message = decrypt(encoded_message, priv_key)
         return True, decoded_message
-    except ValueError:
+    except rsa.pkcs1.DecryptionError:
         return False, encoded_message
 
 
